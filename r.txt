@@ -1,0 +1,73 @@
+# LangChain Core
+langchain
+langchain-community
+langchain-core
+langchain-groq
+
+# OpenAI Integration
+langchain-openai
+openai
+
+# Anthropic Integration
+langchain-anthropic
+
+# Google Gemini (PaLM) Integration
+langchain-google-genai
+google-generativeai
+
+# Hugging Face Integration
+langchain-huggingface
+transformers
+huggingface-hub
+
+# Environment Variable Management
+python-dotenv
+
+# Machine Learning Utilities
+numpy
+scikit-learn
+
+# Streamlit app
+streamlit
+
+
+### Extra dependencies for development
+langchain_community # For community contributions
+langchain_ollama # For Ollama Integration
+faiss-cpu # For fast similarity search
+langchain-groq # Groq Integration
+langchain-google-genai # Google Generative AI Integration
+wikipedia # For Wikipedia Integration
+arxiv # For Arxiv Integration
+ipykernel # For Jupyter Notebook Integration
+
+
+# For OCR (if you decide to add selective OCR later)
+pytesseract
+Pillow  # Required for image handling in OCR
+
+
+
+# PDF and text extraction
+PyMuPDF  # For fast PDF text extraction
+pdfplumber  # Optional: for table extraction if needed later
+
+# Vector database integration
+weaviate-client
+
+# Concurrency & utility libraries
+aiohttp  # If you need async API calls
+
+
+
+# Core NLP & LLM frameworks
+langchain
+transformers
+sentence-transformers
+
+
+
+# Looking at second manner: 
+
+pymupdf
+dotenv
