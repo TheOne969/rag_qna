@@ -17,6 +17,7 @@ class WeaviateHandler:
                     wvc.config.Property(name="text", data_type=wvc.config.DataType.TEXT),
                     wvc.config.Property(name="page", data_type=wvc.config.DataType.INT),
                     wvc.config.Property(name="chunk_index", data_type=wvc.config.DataType.INT),
+                    wvc.config.Property(name="summary",  data_type=wvc.config.DataType.TEXT),
                     wvc.config.Property(name="file_name", data_type=wvc.config.DataType.TEXT),
                     wvc.config.Property(name="section", data_type=wvc.config.DataType.TEXT),
                 ]
@@ -36,7 +37,7 @@ class WeaviateHandler:
         
         for chunk, vector, metadata in zip(chunks, embeddings, metadatas): #zip is converting them into a tuple. 
             self.collection.data.insert(
-                properties={**metadata, "text": chunk},
+                properties={**metadata, "text": chunk, "summary": ""},
                 vector=vector
             )
         print(f"✅ Inserted {len(chunks)} chunks into Weaviate!")

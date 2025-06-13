@@ -19,7 +19,15 @@ class RAGRetriever:
         result = collection.query.near_vector(
             near_vector=vector,
             limit=k,
-            return_properties=["text"],
+            return_properties=["text","page","summary"],
             return_metadata=wvc.query.MetadataQuery(distance=True)
         )
-        return [obj.properties["text"] for obj in result.objects]
+
+        return [
+            {"uuid": o.uuid,   
+             "text": o.properties["text"],
+             "summary": o.properties.get("summary", ""),
+             "page": o.properties.get("page", 0),
+             "distance": o.metadata.distance}
+            for o in result.objects
+            ]

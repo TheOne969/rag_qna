@@ -7,6 +7,13 @@ from rag import RAGRetriever
 from hf_embedder import HFEmbedderAPI 
 from weaviate import connect_to_local
 import weaviate.classes as wvc 
+from generator import generate_answer_hf_api
+from strategy import choose_strategy
+from summarizer import get_or_create_summary
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning,
+                        message=".*swigvarlink.*")
+
 
 # Load environment variables
 load_dotenv() # Used such that any file in the environment could access it, that is other files or functions that are being imported.
@@ -14,10 +21,11 @@ load_dotenv() # Used such that any file in the environment could access it, that
 # CONFIGS 
 # These are just environmental variables, but put here. You could put them in .env file too. Though there is no sensitive data for these, we didn't put them.   
 COLLECTION_NAME = "LectureSlides"
-PDF_PATH = "dagon.pdf"  # input file
+PDF_PATH = "test2.pdf"  # input file
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 64
 MIN_TOKENS = 50  # ⏳ Minimum tokens to keep a chunk
+MODEL_CONTEXT = 2048 # Zephyr context
 
 # Load embedding model
 embedding_model = HFEmbedderAPI() 
@@ -54,10 +62,14 @@ def ingest_pdf(pdf_path):
     chunked_docs = chunk_texts(cleaned_docs, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
 
     # Step 2.5: Extract chunks and filter by length
-    chunks = [
-        doc.page_content for doc in chunked_docs
+    # keep only docs that pass the MIN_TOKENS filter
+    filtered_docs = [
+        doc for doc in chunked_docs
         if len(doc.page_content.split()) >= MIN_TOKENS
-    ]
+        ]
+    
+    # texts you will embed
+    chunks = [doc.page_content for doc in filtered_docs]
 
     print(f"✂️ Split into {len(chunks)} chunks after filtering short ones.")
 
@@ -65,7 +77,11 @@ def ingest_pdf(pdf_path):
     embeddings = embedding_model.encode(chunks)  #  returns list[list[float]]
 
     # 4. Generate metadata
-    metadatas = [generate_metadata(i, file_name) for i in range(len(chunks))]
+    metadatas = [
+        generate_metadata(i, file_name, page=doc.metadata["page"])
+        for i, doc in enumerate(filtered_docs)
+        ]
+    
 
     # 5. Store into Weaviate
 
@@ -80,22 +96,43 @@ def ingest_pdf(pdf_path):
         handler.insert_chunks(chunks, embeddings, metadatas)
 
 
-
-def run_rag_query(query,k):
+def run_rag_query_and_generate(query,k):
     print(f"\n💬 Query: {query}")
 
     with connect_to_local(port=8080, grpc_port=50051) as client:
         retriever = RAGRetriever(COLLECTION_NAME, embedding_model, client)
-        results = retriever.retrieve(query, k=k)
+        hits = retriever.retrieve(query, k=k)# [{'text', 'summary', ...}]
 
-    print("\n🔍 Top Retrieved Chunks:")
-    for i, chunk in enumerate(results, 1):
-        print(f"\n[{i}] {chunk[:300]}...\n")
+        collection = retriever.weaviate_handler.collection
 
+    # Decide which tactic to use
+    strategy = choose_strategy(len(hits), CHUNK_SIZE, MODEL_CONTEXT)
+    print("🔧 Chosen strategy →", strategy)
+
+    if strategy == "full_text":
+        context  = [h["text"] for h in hits]
+
+    
+    elif strategy == "sliding_window":
+        window_tokens = 200           # first 200-token slice of each hit
+        context = [h["text"].split()[:window_tokens] for h in hits]
+        context = [" ".join(t) for t in context]
+
+    elif strategy == "summarize":
+        context = [get_or_create_summary(h, collection) for h in hits]
+
+    pages = sorted({h["page"] for h in hits})     # a set removes duplicates
+    sources = [f"page {p}" for p in pages]
+
+    answer = generate_answer_hf_api(query, context)
+
+    print("\n🤖 Answer:\n", answer)
+    print("\n📚 Sources:", ", ".join(sources))
+    
 
 if __name__ == "__main__":
-    ingest_pdf(PDF_PATH)
 
-    # Test RAG query
-    test_query = "Describe the monolith the narrator finds on the island."
-    run_rag_query(test_query,3)
+    ingest_pdf(PDF_PATH)
+    test_query = "Who is Mr. Higgins?"
+    run_rag_query_and_generate(test_query,3)
+    
