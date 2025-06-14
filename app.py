@@ -50,7 +50,7 @@ def ingest_pdf_file(file_path: str):
         st.info(f"{file_name} already indexed – skipping.")
         return
 
-    st.write(f"📄 Extracting **{file_name}** …")
+    st.write(f"Extracting **{file_name}** …")
     docs        = extract_text_as_documents(file_path)
     cleaned_docs      = [doc.replace("\n", " ").replace("  ", " ").strip() for doc in docs]
     chunked_docs  = chunk_texts(cleaned_docs, CHUNK_SIZE, CHUNK_OVERLAP)
@@ -62,7 +62,7 @@ def ingest_pdf_file(file_path: str):
     metas   = [ generate_metadata(i, file_name, page=doc.metadata["page"])
                for i, doc in enumerate(filtered_docs)]
 
-    st.write(f"✂️  {len(chunks)} chunks after filtering; embedding …")
+    st.write(f" {len(chunks)} chunks after filtering; embedding …")
     vectors = embedder.encode(chunks)
 
     handler.insert_chunks(chunks, vectors, metas)
@@ -89,7 +89,7 @@ def answer_query(question: str, k: int):
 
 # ------------------------------------------------------------------
 # ----- STREAMLIT LAYOUT -------------------------------------------
-st.title("📚 RAG PDF Assistant")
+st.title("RAG Knowledge Assistant")
 
 with st.sidebar:
     st.header("Upload PDFs")
@@ -116,7 +116,7 @@ if st.button("Get answer") and question:
     with st.spinner("Retrieving …"):
         answer, sources, strat = answer_query(question, top_k)
 
-    st.markdown("#### 🤖 Answer")
+    st.markdown("#### Answer")
     st.write(answer)
     st.markdown("**Sources:** " + ", ".join(sources))
     st.caption(f"Strategy used: {strat}")
