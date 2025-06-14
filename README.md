@@ -16,6 +16,7 @@ The app ingests documents, stores chunk embeddings in Weaviate, and answers natu
 
 ## High-level architecture
 
+```
 User ──► Streamlit UI
 │
 │ upload
@@ -26,6 +27,7 @@ Ingestion (chunk → embed) ─► Weaviate ◄─ Vector search ─ RAG Retriev
 ▼
 (optional) HF Summariser ─► Zephyr 7B LLM ─► Answer
 
+```
 ---
 
 ## Setting Up
@@ -80,6 +82,7 @@ Open `http://localhost:8501` in your browser.
 ---
 
 ## Repository layout
+```
 
 rag_qna/
 ├── app.py                      # Streamlit frontend
@@ -93,3 +96,5 @@ rag_qna/
 ├── start_weaviate.sh           # convenience launcher
 ├── requirements.txt            
 └── README.md
+
+```
