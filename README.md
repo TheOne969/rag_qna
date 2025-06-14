@@ -28,7 +28,7 @@ Ingestion (chunk → embed) ─► Weaviate ◄─ Vector search ─ RAG Retriev
 
 ---
 
-## 🏁 Quick start
+## Setting Up
 
 ### 1. Prerequisites
 | Tool | Version | Notes |
@@ -39,10 +39,13 @@ Ingestion (chunk → embed) ─► Weaviate ◄─ Vector search ─ RAG Retriev
 
 ### 2. Clone & install
 
+```
 git clone https://github.com/TheOne969/rag_qna.git
 cd rag_qna
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+```
 
 ### 3. Start Weaviate
 
@@ -66,7 +69,7 @@ Open `http://localhost:8501` in your browser.
 ---
 
 
-## 🛠️ Usage guide
+## Usage guide
 
 | Action | Where | Result |
 |--------|-------|--------|
@@ -76,7 +79,7 @@ Open `http://localhost:8501` in your browser.
 
 ---
 
-## 🧩 Repository layout
+## Repository layout
 
 rag_qna/
 ├── app.py                      # Streamlit frontend
