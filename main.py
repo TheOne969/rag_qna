@@ -21,7 +21,7 @@ load_dotenv() # Used such that any file in the environment could access it, that
 # CONFIGS 
 # These are just environmental variables, but put here. You could put them in .env file too. Though there is no sensitive data for these, we didn't put them.   
 COLLECTION_NAME = "LectureSlides"
-PDF_PATH = "test2.pdf"  # input file
+PDF_PATH = "test.pdf"  # input file
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 64
 MIN_TOKENS = 50  # ⏳ Minimum tokens to keep a chunk
@@ -121,8 +121,7 @@ def run_rag_query_and_generate(query,k):
     elif strategy == "summarize":
         context = [get_or_create_summary(h, collection) for h in hits]
 
-    pages = sorted({h["page"] for h in hits})     # a set removes duplicates
-    sources = [f"page {p}" for p in pages]
+    sources = sorted({f"{h['file_name']} page {h['page']}" for h in hits}) #removes duplicates
 
     answer = generate_answer_hf_api(query, context)
 

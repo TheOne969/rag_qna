@@ -1,0 +1,16 @@
+# ---------- Core ----------
+python-dotenv>=1.0.1          # .env loading
+requests>=2.32.2              # HF Inference API calls
+
+# ---------- Front-end ----------
+streamlit>=1.33.0             # user interface
+
+# ---------- PDF handling ----------
+PyMuPDF>=1.24.3               # fast text extraction
+
+# ---------- RAG tool-chain ----------
+langchain>=0.1.16             # splitter, Document class
+huggingface-hub>=0.23.0       # HFEmbedderAPI helper
+
+# ---------- Vector DB ----------
+weaviate-client>=4.5.4        # gRPC/HTTP client for Weaviate

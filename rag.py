@@ -19,7 +19,7 @@ class RAGRetriever:
         result = collection.query.near_vector(
             near_vector=vector,
             limit=k,
-            return_properties=["text","page","summary"],
+            return_properties=["text","page","summary","file_name"],
             return_metadata=wvc.query.MetadataQuery(distance=True)
         )
 
@@ -28,6 +28,7 @@ class RAGRetriever:
              "text": o.properties["text"],
              "summary": o.properties.get("summary", ""),
              "page": o.properties.get("page", 0),
+             "file_name": o.properties.get("file_name", "unknown.pdf"),
              "distance": o.metadata.distance}
             for o in result.objects
             ]
