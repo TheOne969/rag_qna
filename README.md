@@ -1,4 +1,4 @@
-# 📚 RAG Knowledge Assistant
+# RAG Knowledge Assistant
  
 The app ingests documents, stores chunk embeddings in Weaviate, and answers natural-language questions with Retrieval-Augmented Generation (RAG).
 
