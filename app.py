@@ -36,6 +36,7 @@ def get_client():
 
 @st.cache_resource(show_spinner=False)
 def get_embedder():
+    # Embedder is also the same across reruns. 
     return HFEmbedderAPI()
 
 client    = get_client()
@@ -83,7 +84,8 @@ def answer_query(question: str, k: int):
         context = [get_or_create_summary(h, handler.collection) for h in hits]
 
     sources = sorted({f"{h['file_name']} page {h['page']}" for h in hits})
-    answer  = generate_answer_hf_api(question, context)
+    answer  = generate_answer_hf_api(question, context,max_tokens=400,
+        temperature=0.2)
 
     return answer, sources, strategy
 

@@ -1,60 +1,154 @@
 # generator.py
+import openai
 import os
-import requests
+import time
+import random
 
 def generate_answer_hf_api(
-        query: str,
-        retrieved_chunks: list[str],
-        model_id: str = "HuggingFaceH4/zephyr-7b-beta",
-        max_tokens: int = 180,
-        temperature: float = 0.2,
-        top_p: float= 0.9, 
-        no_repeat_ngram_size: int = 5, 
-        repetition_penalty: float = 1.2,
-        timeout: int = 60
+    query: str,
+    retrieved_chunks: list[str],
+    model_id: str = "openai/gpt-oss-120b:cerebras",
+    max_tokens: int = 300,  # Increased from 180
+    temperature: float = 0.2,
+    **kwargs
 ) -> str:
     """
-    Call the HF Inference API to generate an answer from retrieved context.
-    Raises RuntimeError on HTTP / JSON problems.
+    Fixed version with higher token limits for complete answers
     """
     hf_key = os.getenv("HUGGINGFACE_API_KEY")
     if not hf_key:
         raise RuntimeError("HUGGINGFACE_API_KEY not set")
-
-    api_url = f"https://api-inference.huggingface.co/models/{model_id}"
-    headers = {"Authorization": f"Bearer {hf_key}"}
-
+    
     context = "\n\n".join(retrieved_chunks)
-    prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": max_tokens, 
-            "temperature": temperature,
-            "top_p": top_p,
-            "no_repeat_ngram_size": no_repeat_ngram_size,
-            "repetition_penalty": repetition_penalty    
-            },
-        "options": {"wait_for_model": True}
-    }
+    
+    # Enhanced prompt for complete responses
+    system_prompt = """You are a helpful assistant that answers questions based on provided context. 
+    Provide complete, well-structured answers using only the information from the context. 
+    Always finish your sentences and provide comprehensive responses."""
+    
+    user_prompt = f"""Context:
+{context}
 
+Question: {query}
+
+Please provide a complete and detailed answer based on the context above."""
+    
+    # Try GPT-OSS models with higher token limits
+    client = openai.OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=hf_key
+    )
+    
+    models = [
+        "openai/gpt-oss-120b:cerebras",
+        "openai/gpt-oss-20b:fireworks-ai"
+    ]
+    
+    for model in models:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=max_tokens,  # Use the increased limit
+                temperature=temperature,
+                # Add stop sequences to prevent abrupt cutoffs
+                stop=None  # Let it finish naturally
+            )
+            
+            answer = response.choices[0].message.content.strip()
+            
+            # Check if answer seems complete (basic validation)
+            if len(answer) > 20 and not answer.endswith(('—', '-', 'who is', 'that is', 'which is')):
+                return answer
+            else:
+                print(f"⚠️  {model} gave incomplete answer: {answer[-50:]}")
+                continue
+                
+        except Exception as e:
+            print(f"❌ Model {model} failed: {e}")
+            continue
+    
+    raise RuntimeError("All GPT-OSS models failed or gave incomplete answers")
+
+def try_gpt_oss_models(hf_key, system_prompt, user_prompt, max_tokens, temperature):
+    """Try GPT-OSS models with fresh client"""
+    client = openai.OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=hf_key
+    )
+    
+    models = [
+        "openai/gpt-oss-120b:cerebras",
+        "openai/gpt-oss-20b:fireworks-ai"
+    ]
+    
+    for model in models:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"   Model {model} failed: {e}")
+            continue
+    return None
+
+def try_gpt_oss_with_retry(hf_key, system_prompt, user_prompt, max_tokens, temperature):
+    """Retry GPT-OSS with backoff and jitter"""
+    for attempt in range(3):
+        try:
+            # Add random delay to avoid rate limits
+            time.sleep(random.uniform(1, 3))
+            
+            client = openai.OpenAI(
+                base_url="https://router.huggingface.co/v1",
+                api_key=hf_key
+            )
+            
+            # Try with reduced parameters to increase success rate
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-20b:fireworks-ai",  # Use smaller model
+                messages=[{"role": "user", "content": user_prompt}],  # Simplified
+                max_tokens=min(max_tokens, 100),  # Reduce token limit
+                temperature=0.1  # Lower temperature
+            )
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            print(f"   Retry attempt {attempt + 1} failed: {e}")
+            if attempt < 2:
+                time.sleep(2 ** attempt)  # Exponential backoff
+    return None
+
+def try_local_fallback(hf_key, system_prompt, user_prompt, max_tokens, temperature):
+    """Fallback to local transformers when HF API fails"""
     try:
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=timeout)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        raise RuntimeError(f"Hugging Face request failed: {e}") from e
-
-    data = resp.json()
-
-    # Successful generation returns a list of dicts:
-    if isinstance(data, list) and data and "generated_text" in data[0]:
-        raw= data[0]["generated_text"].strip()
-        # split at last occurrence of "Answer:"
-        answer = raw.split("Answer:")[-1].strip()
-        return answer
-
-    # Model still loading or other server-side message:
-    if isinstance(data, dict) and "error" in data:
-        raise RuntimeError(f"HF API error: {data['error']}")
-
-    raise RuntimeError(f"Unexpected response format: {data}")
+        from transformers import pipeline
+        
+        # Use a small, fast model
+        generator = pipeline("text2text-generation", model="google/flan-t5-base")
+        
+        # Simplified prompt for local model
+        prompt = user_prompt.replace("Context:", "Answer this question using the context:")
+        
+        result = generator(
+            prompt, 
+            max_length=min(max_tokens + 50, 200),
+            temperature=temperature,
+            do_sample=temperature > 0
+        )
+        
+        return result[0]['generated_text'].strip()
+        
+    except Exception as e:
+        print(f"   Local fallback failed: {e}")
+        return None

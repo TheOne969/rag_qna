@@ -125,8 +125,8 @@ def run_rag_query_and_generate(query,k):
 
     answer = generate_answer_hf_api(query, context)
 
-    print("\n🤖 Answer:\n", answer)
-    print("\n📚 Sources:", ", ".join(sources))
+    print("\n Answer:\n", answer)
+    print("\n Sources:", ", ".join(sources))
     
 
 if __name__ == "__main__":

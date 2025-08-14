@@ -6,7 +6,7 @@ from weaviate.classes.query import Filter
 class WeaviateHandler:
     def __init__(self, collection_name: str, client: weaviate.WeaviateClient):
         self.client = client
-        self.collection_name = collection_name
+        self.collection_name = collection_name # A collection is basically a schema/ blueprint. 
 
         if self.collection_name not in self.client.collections.list_all():
             self.client.collections.create(
