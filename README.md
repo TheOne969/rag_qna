@@ -73,6 +73,8 @@ Open `http://localhost:8501` in your browser.
 
 ## Usage guide
 
+<mark>NOTICE!</mark> The current version could only read files whose file layouts aren't messy, especially the ones which DO NOT contain text in two columns in a single page. 
+
 | Action | Where | Result |
 |--------|-------|--------|
 | **Ingest PDF** | Sidebar → *Ingest* | File chunked → embedded → stored; duplicates skipped. |
