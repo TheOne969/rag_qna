@@ -25,7 +25,7 @@ Ingestion (chunk → embed) ─► Weaviate ◄─ Vector search ─ RAG Retriev
 │
 │ top-k context
 ▼
-(optional) HF Summariser ─► Zephyr 7B LLM ─► Answer
+(optional) HF Summariser ─► Generator LLM ─► Answer
 
 ```
 ---
@@ -44,7 +44,7 @@ Ingestion (chunk → embed) ─► Weaviate ◄─ Vector search ─ RAG Retriev
 ```
 git clone https://github.com/TheOne969/rag_qna.git
 cd rag_qna
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 ```
@@ -75,6 +75,8 @@ Open `http://localhost:8501` in your browser.
 
 <mark>NOTICE!</mark> The current version could only read files whose file layouts aren't messy, especially the ones which DO NOT contain text in two columns in a single page. Also the pdf should contain text not images.
 
+Pdfs like the "test.pdf" in the repo would work. 
+
 | Action | Where | Result |
 |--------|-------|--------|
 | **Ingest PDF** | Sidebar → *Ingest* | File chunked → embedded → stored; duplicates skipped. |
@@ -92,7 +94,7 @@ rag_qna/
 ├── chunking.py                 # Recursive splitter
 ├── pdf_extraction.py           # PDF loader
 ├── summarizer.py               # HF summariser + lazy cache
-├── generator.py                # Zephyr-7B answer generator
+├── generator.py                # Using a model from Hugging face as generator
 ├── rag.py                      # retrieval logic
 ├── weaviate_handler.py         # collection helpers
 ├── start_weaviate.sh           # convenience launcher
@@ -100,3 +102,10 @@ rag_qna/
 └── README.md
 
 ```
+
+## Future Upgrades 
+
+- First of all, the immediate update would be to make it usable for files which have text in like columns in a page or with stuff with too many headers and images. 
+- Secondly, Making it usable for pdfs where all pages are images.  
+
+- Another future idea to implement is to explore mutliple chunking strategies and try them out using this. 

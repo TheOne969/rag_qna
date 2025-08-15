@@ -25,7 +25,7 @@ COLLECTION_NAME   = "LectureSlides"
 CHUNK_SIZE        = 512
 CHUNK_OVERLAP     = 64
 MIN_TOKENS        = 50
-MODEL_CONTEXT     = 2048            # Zephyr window
+MODEL_CONTEXT     = 2048            
 PORT_HTTP, PORT_GRPC = 8080, 50051
 TMP_DIR = tempfile.mkdtemp(prefix="rag_upload_") #temporary director where pdfs would be stored. 
 
