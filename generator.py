@@ -9,7 +9,7 @@ def generate_answer_hf_api(
     retrieved_chunks: list[str],
     model_id: str = "openai/gpt-oss-120b:cerebras",
     max_tokens: int = 300,  # Increased from 180
-    temperature: float = 0.2,
+    temperature: float = 0.2, # The more the temperature is, more the model is likely to take low-probablility tokens. This is like flattening the probability distribution. 
     **kwargs
 ) -> str:
     """
@@ -52,9 +52,9 @@ Please provide a complete and detailed answer based on the context above."""
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                max_tokens=max_tokens,  # Use the increased limit
+                max_tokens=max_tokens,  
                 temperature=temperature,
-                # Add stop sequences to prevent abrupt cutoffs
+            
                 stop=None  # Let it finish naturally
             )
             
@@ -117,7 +117,7 @@ def try_gpt_oss_with_retry(hf_key, system_prompt, user_prompt, max_tokens, tempe
             # Try with reduced parameters to increase success rate
             response = client.chat.completions.create(
                 model="openai/gpt-oss-20b:fireworks-ai",  # Use smaller model
-                messages=[{"role": "user", "content": user_prompt}],  # Simplified
+                messages=[{"role": "user", "content": user_prompt}],  # Simplified. # No system prompts. System prompts are basically used to set up an intended overarching behaviour. 
                 max_tokens=min(max_tokens, 100),  # Reduce token limit
                 temperature=0.1  # Lower temperature
             )
