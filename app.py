@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from weaviate import connect_to_local
 import weaviate.classes as wvc
 
+from weaviate import connect_to_weaviate_cloud
+from weaviate.classes.init import Auth
+
 from pdf_extraction import extract_text_as_documents
 from chunking          import chunk_texts
 from weaviate_handler  import WeaviateHandler
@@ -31,8 +34,18 @@ TMP_DIR = tempfile.mkdtemp(prefix="rag_upload_") #temporary director where pdfs 
 
 @st.cache_resource(show_spinner=False)
 def get_client():
-    # One Weaviate connection reused across reruns
-    return connect_to_local(port=PORT_HTTP, grpc_port=PORT_GRPC)
+    # Connect to Weaviate Cloud using environment variables
+    weaviate_url = os.environ.get("WEAVIATE_URL")
+    weaviate_api_key = os.environ.get("WEAVIATE_API_KEY")
+    
+    if not weaviate_url or not weaviate_api_key:
+        st.error("Missing Weaviate credentials in environment variables.")
+        st.stop()
+        
+    return connect_to_weaviate_cloud(
+        cluster_url=weaviate_url,
+        auth_credentials=Auth.api_key(weaviate_api_key)
+    )
 
 @st.cache_resource(show_spinner=False)
 def get_embedder():
