@@ -53,7 +53,7 @@ def ingest_pdf_file(file_path: str):
 
     st.write(f"Extracting **{file_name}** …")
     docs        = extract_text_as_documents(file_path)
-    cleaned_docs      = [doc.replace("\n", " ").replace("  ", " ").strip() for doc in docs]
+    cleaned_docs      = [doc.strip() for doc in docs]
     chunked_docs  = chunk_texts(cleaned_docs, CHUNK_SIZE, CHUNK_OVERLAP)
 
     # Filter & split meta / text
@@ -80,11 +80,23 @@ def answer_query(question: str, k: int):
         context = [h["text"] for h in hits]
     elif strategy == "sliding_window":
         context = [" ".join(h["text"].split()[:200]) for h in hits]
-    else:                       # summarize
+    else:  # summarize
         context = [get_or_create_summary(h, handler.collection) for h in hits]
 
+    
+    cleaned_context = [text.replace("<br>", "\n") for text in context]
+
     sources = sorted({f"{h['file_name']} page {h['page']}" for h in hits})
-    answer  = generate_answer_hf_api(question, context,max_tokens=400,
+    
+    # Force the model to be concise so it finishes its thoughts
+    prompt_instruction = (
+        f"{question}\n\n"
+        "Instruction: Provide a concise answer based on the context. "
+        "Monitor your length and ensure your response finishes cleanly. "
+        "Do not stop mid-sentence or leave thoughts incomplete."
+    )
+    
+    answer  = generate_answer_hf_api(prompt_instruction, cleaned_context, max_tokens=800,
         temperature=0.2)
 
     return answer, sources, strategy

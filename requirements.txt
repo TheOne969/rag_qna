@@ -6,7 +6,7 @@ requests>=2.32.2              # HF Inference API calls
 streamlit>=1.33.0             # user interface
 
 # ---------- PDF handling ----------
-PyMuPDF>=1.24.3               # fast text extraction
+pymupdf4llm[ocr]>=0.3.0            # Layout-aware extraction & local Hybrid OCR
 
 # ---------- RAG tool-chain ----------
 langchain>=0.3.0              # Main LangChain package
