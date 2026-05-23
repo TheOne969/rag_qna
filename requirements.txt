@@ -9,9 +9,16 @@ streamlit>=1.33.0             # user interface
 PyMuPDF>=1.24.3               # fast text extraction
 
 # ---------- RAG tool-chain ----------
-langchain>=0.1.16             # splitter, Document class
+langchain>=0.3.0              # Main LangChain package
+langchain-core>=0.3.63,<0.4.0 # Locked core to avoid breaking changes
+langchain-text-splitters>=0.3.0 # Modern standalone text splitters
 huggingface-hub>=0.23.0       # HFEmbedderAPI helper
-openai
+openai                        # OpenAI API client
 
 # ---------- Vector DB ----------
 weaviate-client>=4.5.4        # gRPC/HTTP client for Weaviate
+
+# ---------- Protocol Buffers & gRPC (Conflict Resolution) ----------
+grpcio==1.71.0                # Locked to prevent protobuf v6 conflicts
+grpcio-health-checking==1.71.0
+protobuf>=5.26.1,<6.0.0       # Sweet spot for Weaviate + Google GenAI
