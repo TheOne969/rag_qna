@@ -7,17 +7,17 @@ import random
 def generate_answer_hf_api(
     query: str,
     retrieved_chunks: list[str],
+    api_key: str,                   # <-- ADDED THIS PARAMETER
     model_id: str = "openai/gpt-oss-120b:cerebras",
-    max_tokens: int = 300,  # Increased from 180
-    temperature: float = 0.2, # The more the temperature is, more the model is likely to take low-probablility tokens. This is like flattening the probability distribution. 
+    max_tokens: int = 300,  
+    temperature: float = 0.2, 
     **kwargs
 ) -> str:
     """
     Fixed version with higher token limits for complete answers
     """
-    hf_key = os.getenv("HUGGINGFACE_API_KEY")
-    if not hf_key:
-        raise RuntimeError("HUGGINGFACE_API_KEY not set")
+    if not api_key:
+        raise RuntimeError("HUGGINGFACE_API_KEY not provided")
     
     context = "\n\n".join(retrieved_chunks)
     
@@ -33,10 +33,10 @@ Question: {query}
 
 Please provide a complete and detailed answer based on the context above."""
     
-    # Try GPT-OSS models with higher token limits
+    # Pass the user's api_key directly here
     client = openai.OpenAI(
         base_url="https://router.huggingface.co/v1",
-        api_key=hf_key
+        api_key=api_key 
     )
     
     models = [
