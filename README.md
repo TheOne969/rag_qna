@@ -2,6 +2,8 @@
 
 The app ingests documents, stores chunk embeddings in Weaviate Cloud, and answers natural-language questions with Retrieval-Augmented Generation (RAG).
 
+**Live Demo**: [Click here](https://ragqna-qbmps4gubqtfqsoblhiwjg.streamlit.app/)
+
 ---
 
 ## Features
