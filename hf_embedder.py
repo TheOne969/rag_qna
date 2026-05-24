@@ -3,9 +3,12 @@ import os, requests
 from typing import List
 
 class HFEmbedderAPI:
-    def __init__(self, model_id="sentence-transformers/all-MiniLM-L6-v2"):
+    def __init__(self, api_key: str, model_id="sentence-transformers/all-MiniLM-L6-v2"):
         self.model_id = model_id
-        self.api_key   = os.getenv("HUGGINGFACE_API_KEY")
+        self.api_key  = api_key
+        
+        if not self.api_key:
+            raise ValueError("Hugging Face API key must be provided to the embedder.")
 
     def encode(self, texts: List[str]):
         url = (

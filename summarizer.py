@@ -27,12 +27,12 @@ def summarise_via_api(text: str,  max_tokens: int = 60) -> str:
         return data[0]["summary_text"]
     raise RuntimeError(f"Summarisation failed: {data}")
 
-
-def get_or_create_summary(hit: dict, collection):
-    if hit["summary"]:
+def get_or_create_summary(hit: dict, collection, api_key: str): # <-- ADDED PARAMETER
+    if hit.get("summary"):
         return hit["summary"]                         # already cached
 
-    summary = summarise_via_api(hit["text"])          # call HF API once
+    # Pass the API key down to the actual API call function
+    summary = summarise_via_api(hit["text"], api_key)         
     collection.data.update(oid=hit["uuid"],
                            properties={"summary": summary})
     return summary

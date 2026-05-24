@@ -28,7 +28,9 @@ MIN_TOKENS = 50  # ⏳ Minimum tokens to keep a chunk
 MODEL_CONTEXT = 2048 # Zephyr context
 
 # Load embedding model
-embedding_model = HFEmbedderAPI() 
+import os
+hf_key = os.getenv("HUGGINGFACE_API_KEY")
+embedding_model = HFEmbedderAPI(api_key=hf_key)
 
 def generate_metadata(chunk_index, file_name, page=None, section="N/A"):
     return {
@@ -130,7 +132,11 @@ def run_rag_query_and_generate(query,k):
     
 
 if __name__ == "__main__":
-
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    hf_key = os.getenv("HUGGINGFACE_API_KEY")
+    embedding_model = HFEmbedderAPI(api_key=hf_key)
     ingest_pdf(PDF_PATH)
     test_query = "Who is Mr. Higgins?"
     run_rag_query_and_generate(test_query,3)
