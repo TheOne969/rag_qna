@@ -70,8 +70,7 @@ pip install -r requirements.txt
 Create a configuration file named `.env` in the repository root directory:
 
 ```text
-HUGGINGFACE_API_KEY=<your-hf-token>
-WEAVIATE_URL=<your-wcd-cluster-url>
+WEAVIATE_URL=<your-wcd-cluster-rest-endpoint>
 WEAVIATE_API_KEY=<your-wcd-admin-api-key>
 ```
 
